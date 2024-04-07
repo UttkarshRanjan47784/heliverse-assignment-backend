@@ -17,14 +17,17 @@ const userSchema = new mongoose.Schema({
 async function retrieveAllUsers (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
-        await mongoose.connect(process.env.MONGO)
+        await mongoose.connect(process.env.MONGO);
         let offset = Number(req.query.offset) || 0;
-        const results = await userCollection.find().skip(offset).limit(20);
+        const number = await userCollection.find().count();
+        const results = await userCollection.find().skip(offset).limit(20)
         res.json({
             stat : true,
-            msg : results
+            msg : results,
+            num : number
         })
     } catch (error){
+        console.log(error)
         res.json({
             stat : false,
             msg : error.message
@@ -133,6 +136,7 @@ async function filterUsers (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
+        const number = await userCollection.find().count();
         let query = userCollection.find();
         query =  (req.query.domain)? query.find({
             domain : req.query.domain
@@ -147,7 +151,8 @@ async function filterUsers (req, res) {
         let response = await query.skip(offset).limit(20);
         res.json({
             stat : true,
-            msg : response
+            msg : response,
+            num : number
         })
     } catch (error){
         res.json({
@@ -161,7 +166,7 @@ async function searchUsersFn (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        console.log(req.params.name)
+        const number = await userCollection.find().count();
         let newRegex = new RegExp(`^${req.params.name}`)
         let offset = Number(req.query.offset) || 0;
         let response = await userCollection.find({
@@ -169,7 +174,8 @@ async function searchUsersFn (req, res) {
         }).skip(offset).limit(20)
         res.json({
             stat : true,
-            msg : response
+            msg : response,
+            num : number
         })
     } catch (error){
         res.json({
@@ -183,7 +189,7 @@ async function searchUsersLn (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        console.log(req.params.name)
+        const number = await userCollection.find().count();
         let newRegex = new RegExp(`^${req.params.name}`)
         let offset = Number(req.query.offset) || 0;
         let response = await userCollection.find({
@@ -191,7 +197,8 @@ async function searchUsersLn (req, res) {
         }).skip(offset).limit(20)
         res.json({
             stat : true,
-            msg : response
+            msg : response,
+            num : number
         })
     } catch (error){
         res.json({
