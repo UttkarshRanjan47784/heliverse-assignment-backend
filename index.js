@@ -1,7 +1,7 @@
 import express from 'express'
 import env from 'dotenv'
 import cors from 'cors'
-import { retrieveAllUsers, addUser, retrieveUser, updateUser } from './users.js'
+import { retrieveAllUsers, addUser, retrieveUser, updateUser, deleteUser, filterUsers, searchUsersFn, searchUsersLn } from './users.js'
 
 env.config()
 
@@ -15,6 +15,10 @@ app.get(`/api/users`, retrieveAllUsers)
 app.get(`/api/users/:id`, retrieveUser)
 app.post(`/api/users`, addUser)
 app.put(`/api/users/:id`, updateUser)
+app.delete(`/api/users/:id`, deleteUser)
+app.get(`/api/filterusers`, filterUsers)
+app.get(`/api/searchusers/fn/:name`, searchUsersFn)
+app.get(`/api/searchusers/ln/:name`, searchUsersLn)
 
 app.listen(port, ()=>{
     console.log(`server running on port ${port}`)

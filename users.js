@@ -18,12 +18,8 @@ async function retrieveAllUsers (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        let offset = Number(req.query.offset);
-        console.log((Number(req.query.size) > 20))
-        let size = (req.query.size > 20)? 20 : req.query.size
-        const Users = userCollection.find();
-        Users.skip(offset).limit(size);
-        let results = await Users.exec()
+        let offset = Number(req.query.offset) || 0;
+        const results = await userCollection.find().skip(offset).limit(20);
         res.json({
             stat : true,
             msg : results
@@ -63,8 +59,7 @@ async function addUser (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        let query = userCollection.findOne().sort({ id : -1 })
-        let response = await query.exec();
+        let response = await userCollection.findOne().sort({ id : -1 })
         let newID = response.id + 1
         const newUser = new userCollection({
             ...req.body,
@@ -89,17 +84,114 @@ async function updateUser (req, res) {
         await mongoose.connect(process.env.MONGO)
         let reqID = req.params.id;
         console.log(reqID)
-        let query = userCollection.findOne().sort({ id : -1 })
-        let response = await query.exec();
-        let newID = response.id + 1
-        const newUser = new userCollection({
-            ...req.body,
-            id : newID
-        });
-        await newUser.save()
+        let reqUser = await userCollection.findOne({ id:reqID })
+        let oldVal = {...reqUser}
+        let newUser = {...req.body}
+
+        reqUser.first_name = newUser.first_name? newUser.first_name : reqUser.first_name,
+        reqUser.last_name = newUser.last_name? newUser.last_name : reqUser.last_name,
+        reqUser.email = newUser.email? newUser.email : reqUser.email,
+        reqUser.gender = newUser.gender? newUser.gender : reqUser.gender,
+        reqUser.avatar = newUser.avatar? newUser.avatar : reqUser.avatar,
+        reqUser.domain = newUser.domain? newUser.domain : reqUser.domain,
+        reqUser.available = newUser.available? newUser.available : reqUser.available,
+        
+        reqUser.save()
+
         res.json({
             stat : true,
-            msg : `User created with ID : ${newID}`
+            msg : reqUser
+        })
+    } catch (error){
+        res.json({
+            stat : false,
+            msg : error.message
+        })
+    }
+}
+
+async function deleteUser (req, res) {
+    try{
+        const userCollection = mongoose.model('TBUsers', userSchema);
+        await mongoose.connect(process.env.MONGO)
+        let response = await userCollection.findOneAndDelete({
+            id : req.params.id
+        });
+        res.json({
+            stat : true,
+            msg : response
+        })
+    } catch (error){
+        res.json({
+            stat : false,
+            msg : error.message
+        })
+    }
+}
+
+async function filterUsers (req, res) {
+    try{
+        const userCollection = mongoose.model('TBUsers', userSchema);
+        await mongoose.connect(process.env.MONGO)
+        let query = userCollection.find();
+        query =  (req.query.domain)? query.find({
+            domain : req.query.domain
+        }) : query;
+        query =  (req.query.gender)? query.find({
+            gender : req.query.gender
+        }) : query;
+        query =  (req.query.available)? query.find({
+            available : req.query.available
+        }) : query;
+        let offset = Number(req.query.offset) || 0;
+        let response = await query.skip(offset).limit(20);
+        res.json({
+            stat : true,
+            msg : response
+        })
+    } catch (error){
+        res.json({
+            stat : false,
+            msg : error.message
+        })
+    }
+}
+
+async function searchUsersFn (req, res) {
+    try{
+        const userCollection = mongoose.model('TBUsers', userSchema);
+        await mongoose.connect(process.env.MONGO)
+        console.log(req.params.name)
+        let newRegex = new RegExp(`^${req.params.name}`)
+        let offset = Number(req.query.offset) || 0;
+        let response = await userCollection.find({
+            first_name : newRegex
+        }).skip(offset).limit(20)
+        res.json({
+            stat : true,
+            msg : response
+        })
+    } catch (error){
+        res.json({
+            stat : false,
+            msg : error.message
+        })
+    }
+}
+
+async function searchUsersLn (req, res) {
+    try{
+        const userCollection = mongoose.model('TBUsers', userSchema);
+        await mongoose.connect(process.env.MONGO)
+        console.log(req.params.name)
+        let newRegex = new RegExp(`^${req.params.name}`)
+        let offset = Number(req.query.offset) || 0;
+        let response = await userCollection.find({
+            last_name : newRegex
+        }).skip(offset).limit(20)
+        res.json({
+            stat : true,
+            msg : response
         })
     } catch (error){
         res.json({
@@ -110,5 +202,4 @@ async function updateUser (req, res) {
 }
 
 
-
-export { retrieveAllUsers, addUser, retrieveUser, updateUser }
+export { retrieveAllUsers, addUser, retrieveUser, updateUser, deleteUser, filterUsers, searchUsersFn, searchUsersLn }
