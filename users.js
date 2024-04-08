@@ -136,7 +136,7 @@ async function filterUsers (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        const number = await userCollection.find().count();
+        
         let query = userCollection.find();
         query =  (req.query.domain)? query.find({
             domain : req.query.domain
@@ -147,12 +147,14 @@ async function filterUsers (req, res) {
         query =  (req.query.available)? query.find({
             available : req.query.available
         }) : query;
+
+        
+        let response = await query
         let offset = Number(req.query.offset) || 0;
-        let response = await query.skip(offset).limit(20);
         res.json({
             stat : true,
-            msg : response,
-            num : number
+            msg : response.slice(offset, offset+20),
+            num : response.length
         })
     } catch (error){
         res.json({
@@ -166,15 +168,15 @@ async function searchUsersFn (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        const number = await userCollection.find().count();
         let newRegex = new RegExp(`^${req.params.name}`)
         let offset = Number(req.query.offset) || 0;
         let response = await userCollection.find({
             first_name : newRegex
-        }).skip(offset).limit(20)
+        })
+        const number = response.length;
         res.json({
             stat : true,
-            msg : response,
+            msg : response.slice(offset, offset+20),
             num : number
         })
     } catch (error){
@@ -189,15 +191,15 @@ async function searchUsersLn (req, res) {
     try{
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
-        const number = await userCollection.find().count();
         let newRegex = new RegExp(`^${req.params.name}`)
         let offset = Number(req.query.offset) || 0;
         let response = await userCollection.find({
             last_name : newRegex
-        }).skip(offset).limit(20)
+        })
+        const number = response.length;
         res.json({
             stat : true,
-            msg : response,
+            msg : response.slice(offset, offset+20),
             num : number
         })
     } catch (error){
