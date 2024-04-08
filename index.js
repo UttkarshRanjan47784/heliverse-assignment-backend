@@ -2,6 +2,7 @@ import express from 'express'
 import env from 'dotenv'
 import cors from 'cors'
 import { retrieveAllUsers, addUser, retrieveUser, updateUser, deleteUser, filterUsers, searchUsersFn, searchUsersLn } from './users.js'
+import { addGroup, retrieveAllGroups } from './groups.js'
 
 env.config()
 
@@ -16,13 +17,8 @@ app.get(`/api/filterusers`, filterUsers)
 app.get(`/api/searchusers/fn/:name`, searchUsersFn)
 app.get(`/api/searchusers/ln/:name`, searchUsersLn)
 
-// app.get(`/api/searchusers/`, (req, res)=>{
-//     res.json({
-//         stat : true,
-//         msg : [],
-//         num : 0
-//     })
-// })
+app.post(`/api/team`, addGroup)
+app.get(`/api/team`, retrieveAllGroups)
 
 //backend only routes
 
