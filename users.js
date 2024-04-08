@@ -41,7 +41,6 @@ async function retrieveUser (req, res) {
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
         let reqID = req.params.id;
-        console.log(reqID);
         let reqUser = await userCollection.findOne({
             id : reqID
         })
@@ -86,7 +85,6 @@ async function updateUser (req, res) {
         const userCollection = mongoose.model('TBUsers', userSchema);
         await mongoose.connect(process.env.MONGO)
         let reqID = req.params.id;
-        console.log(reqID)
         let reqUser = await userCollection.findOne({ id:reqID })
         let oldVal = {...reqUser}
         let newUser = {...req.body}
